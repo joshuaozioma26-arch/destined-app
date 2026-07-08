@@ -1,1 +1,106 @@
+import { useState } from 'react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 
+const PROFILES = [
+  { id: '1', name: 'Mia', age: 24, photo: 'https://picsum.photos/seed/mia/400/600' },
+  { id: '2', name: 'James', age: 27, photo: 'https://picsum.photos/seed/james/400/600' },
+  { id: '3', name: 'Sofia', age: 22, photo: 'https://picsum.photos/seed/sofia/400/600' },
+];
+
+function App() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [matches, setMatches] = useState<string[]>([]);
+
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const current = PROFILES[currentIndex];
+    if (direction === 'right') {
+      setMatches([...matches, current.name]);
+      alert(❤️ You liked ${current.name}!);
+    }
+    setCurrentIndex(prev => prev + 1);
+  };
+
+  if (currentIndex >= PROFILES.length) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-purple-600 text-white p-8 text-center">
+        <h1 className="text-4xl font-bold mb-4">❤️‍🔥 Destined</h1>
+        <p className="text-xl">No more profiles today!</p>
+        {matches.length > 0 && (
+          <div className="mt-6 bg-white/20 rounded-xl p-4 w-full max-w-sm">
+            <p className="font-bold">💕 Your Matches:</p>
+            {matches.map((name, i) => (
+              <p key={i}>❤️ {name}</p>
+            ))}
+          </div>
+        )}
+        <button 
+          onClick={() => { setCurrentIndex(0); setMatches([]); }}
+          className="mt-6 bg-white text-purple-600 px-6 py-3 rounded-full font-bold"
+        >
+          🔄 Start Over
+        </button>
+      </div>
+    );
+  }
+
+  const current = PROFILES[currentIndex];
+
+  return (
+    <div className="relative w-full max-w-md mx-auto h-screen bg-gray-100 overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 z-10 bg-white/80 backdrop-blur p-4 flex justify-between">
+        <h1 className="text-xl font-bold text-pink-600">❤️‍🔥 Destined</h1>
+        <div className="flex gap-2">
+          <span className="bg-yellow-100 px-2 py-1 rounded text-xs">🪙 100</span>
+          <span className="bg-blue-100 px-2 py-1 rounded text-xs">💎 0</span>
+        </div>
+      </div>
+
+      <div className="pt-16 px-4 h-full">
+        <SwipeCard profile={current} onSwipe={handleSwipe} />
+      </div>
+
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-6 z-10">
+        <button onClick={() => handleSwipe('left')} className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center text-3xl border-2 border-red-500 text-red-500">
+          ✕
+        </button>
+        <button onClick={() => handleSwipe('right')} className="w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center text-3xl border-2 border-green-500 text-green-500">
+          ♥
+        </button>
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3">
+        <button className="text-pink-500">🏠</button>
+        <button className="text-gray-400">💬</button>
+        <button className="text-gray-400">🎁</button>
+        <button className="text-gray-400">🎮</button>
+        <button className="text-gray-400">👤</button>
+      </div>
+    </div>
+  );
+}
+
+function SwipeCard({ profile, onSwipe }: any) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+
+  return (
+    <motion.div
+      className="absolute top-0 left-4 right-4 h-5/6 rounded-3xl shadow-2xl bg-white overflow-hidden"
+      style={{ x, rotate }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={(_, info) => {
+        if (info.offset.x > 100) onSwipe('right');
+        else if (info.offset.x < -100) onSwipe('left');
+      }}
+
+>
+      <img src={profile.photo} className="w-full h-full object-cover" alt={profile.name} />
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
+        <h2 className="text-3xl font-bold">{profile.name}, {profile.age}</h2>
+      </div>
+    </motion.div>
+  );
+}
+
+export default App;
